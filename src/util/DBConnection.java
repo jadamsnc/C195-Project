@@ -10,6 +10,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  *
@@ -71,5 +73,10 @@ public class DBConnection {
         String query = "SELECT " + selectValue + " FROM " + fromValue + ";";
         ResultSet rs = stmt.executeQuery(query);
         return rs;
+    }
+    
+    public static String dateConvert(Date date) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return dateFormat.format(date);
     }
 }
