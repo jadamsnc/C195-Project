@@ -33,6 +33,7 @@ public class C195Project extends Application {
             Scene scene = new Scene(main);
             
             stage.setScene(scene);
+            stage.setTitle("Login");
             
             stage.show();
         } catch (IOException ex) {

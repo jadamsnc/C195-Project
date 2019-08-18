@@ -73,6 +73,7 @@ public class LoginController implements Initializable {
                 Parent mainWindowParent = FXMLLoader.load(getClass().getResource("MainWindow.fxml"));
                 Scene mainWindowScene = new Scene(mainWindowParent);
                 Stage mainWindow = (Stage) ((Node)event.getSource()).getScene().getWindow();
+                mainWindow.setTitle("Scheduler");
                 mainWindow.setScene(mainWindowScene);
                 mainWindow.show();
             } catch (IOException e) {
@@ -81,8 +82,7 @@ public class LoginController implements Initializable {
                 alert.setTitle("Error");
                 alert.setHeaderText("Problem loading main window");
                 alert.setContentText("Sorry, the main window has failed to load");
-
-alert.showAndWait();
+                alert.showAndWait();
             }
         }
         else {
