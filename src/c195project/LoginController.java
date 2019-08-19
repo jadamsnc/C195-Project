@@ -49,7 +49,7 @@ public class LoginController implements Initializable {
     
     ResourceBundle rb;
     
-    
+    // I need to recreate this to use the mysql server for user login
     @FXML
     private void LoginButtonHandler(ActionEvent event) {
         if (nameBox.getText().equals("test") && passBox.getText().equals("test")) {
