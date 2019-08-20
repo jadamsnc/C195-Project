@@ -25,7 +25,7 @@ public class DBConnection {
     final static String DBUSER = "U05lYc";
     final static String DBPASS = "53688540815";
     
-    public DBConnection(){}
+    private DBConnection(){}
     
     public static Connection getDBConn() {
         return dbconn;
@@ -62,7 +62,6 @@ public class DBConnection {
         String query = "SELECT " + selectValue + " FROM " + fromValue + 
                 " WHERE " + whereValue + ";";
         ResultSet rs = stmt.executeQuery(query);
-        DBConnection.closeConn();
         return rs;
     }
     
@@ -81,6 +80,14 @@ public class DBConnection {
         stmt = dbconn.createStatement();
         String insert = "INSERT INTO " + TableName + " VALUES " + Values + ";";
         stmt.executeUpdate(insert);
+    }
+    
+    public static void delete(String TableName, String Value) throws SQLException {
+        DBConnection.connect();
+        Statement stmt;
+        stmt = dbconn.createStatement();
+        String delete = "DELETE FROM " + TableName + " WHERE " + Value + ";";
+        stmt.executeUpdate(delete);
     }
     
     public static String dateConvert(Date date) {

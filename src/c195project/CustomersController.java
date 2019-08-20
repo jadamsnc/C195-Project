@@ -5,6 +5,8 @@
  */
 package c195project;
 
+import Models.City;
+import Models.Country;
 import Models.Customer;
 import java.net.URL;
 import java.sql.Date;
@@ -14,10 +16,13 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 import javafx.collections.FXCollections;
+import static javafx.collections.FXCollections.observableList;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -25,6 +30,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import util.CityConverter;
+import util.CountryConverter;
 import util.DBConnection;
 
 /**
@@ -91,6 +98,7 @@ public class CustomersController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
         populateTable();
+        populateCountry();
     }
     
     @FXML
@@ -109,7 +117,6 @@ public class CustomersController implements Initializable {
                 DBConnection.insert("", "");
             } catch (SQLException e) {
                 System.out.println("Problem with DB insert");
-                e.printStackTrace();
             } finally {
                 DBConnection.closeConn();
             }
@@ -126,14 +133,70 @@ public class CustomersController implements Initializable {
         
     }
     
+    @FXML
+    public void newCountryComboBoxHandler() {
+        if (newCountryComboBox.getSelectionModel().getSelectedItem() != null) {
+            Country selectedCountry = (Country) 
+                    newCountryComboBox.getSelectionModel().getSelectedItem();
+            populateCity(selectedCountry.getCountryID(), newCityComboBox);
+        }
+    }
+    
+    @FXML
+    public void updateCountryComboBoxHandler() {
+        if (updateCountryComboBox.getSelectionModel().getSelectedItem() != null) {
+            Country selectedCountry = (Country) 
+                    updateCountryComboBox.getSelectionModel().getSelectedItem();
+            populateCity(selectedCountry.getCountryID(), updateCityComboBox);
+        }
+    }
+    
     // this function will be used to populate the country box on initialization
-    public void populateCountry(ComboBox box){
-        
+    public void populateCountry(){
+        ArrayList<Country> countryList = new ArrayList();
+        try {
+            ResultSet rs = DBConnection.query("*", "country");
+            while (rs.next()) {
+                int CountryID = rs.getInt("countryId");
+                String CountryName = rs.getString("country");
+                countryList.add(new Country(CountryID, CountryName));
+            }
+            newCountryComboBox.setConverter(new CountryConverter());
+            newCountryComboBox.setItems(observableList(countryList));
+            updateCountryComboBox.setConverter(new CountryConverter());
+            updateCountryComboBox.setItems(observableList(countryList));
+        } catch (SQLException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Problem retrieving city list");
+            alert.setContentText("Sorry, the city list was unable to be retrieved");
+            alert.showAndWait();
+        } finally {
+            DBConnection.closeConn();
+        }
     }
     
     // this function will be used to populate the city box when country is selected
-    public void populateCity(ComboBox box){
-        
+    public void populateCity(int countryID, ComboBox box){
+        ArrayList<City> cityList = new ArrayList();
+        try {
+            ResultSet rs = DBConnection.query("*", "city", "countryId='" + countryID + "'");
+            while (rs.next()) {
+                int CityID = rs.getInt("cityId");
+                String CityName = rs.getString("city");
+                cityList.add(new City(CityID, CityName));
+            }
+            box.setConverter(new CityConverter());
+            box.setItems(observableList(cityList));
+        } catch (SQLException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR); 
+            alert.setTitle("Error");
+            alert.setHeaderText("Problem retrieving country list");
+            alert.setContentText("Sorry, the country list was unable to be retrieved");
+            alert.showAndWait();
+        } finally {
+            DBConnection.closeConn();
+        }
     }
     
     public void populateTable() {
@@ -152,17 +215,17 @@ public class CustomersController implements Initializable {
             }
         } catch (SQLException e) {
             System.out.println("DB failed");
-            e.printStackTrace();
         } finally {
             DBConnection.closeConn();
         }
-        for (Iterator<Customer> it = observableCustomer.iterator(); it.hasNext();) {
-            Customer cust = it.next();
+        observableCustomer.stream().map((cust) -> {
             System.out.println(cust.getCustomerID());
+            return cust;
+        }).forEachOrdered((Customer cust) -> {
             System.out.println(cust.getCustomerName());
-        } 
-        customerIDCol.setCellValueFactory(new PropertyValueFactory<Customer, Integer>("CustomerID"));
-        customerNameCol.setCellValueFactory(new PropertyValueFactory<Customer, String>("CustomerName"));
+        }); 
+        customerIDCol.setCellValueFactory(new PropertyValueFactory<>("CustomerID"));
+        customerNameCol.setCellValueFactory(new PropertyValueFactory<>("CustomerName"));
         customerTable.setItems(observableCustomer);
     }
 }
