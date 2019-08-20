@@ -20,7 +20,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -45,9 +45,9 @@ public class CustomersController implements Initializable {
     @FXML
     TextField newPostalCodeTxtBox;
     @FXML
-    ChoiceBox newCityChoiceBox;
+    ComboBox newCityComboBox;
     @FXML
-    ChoiceBox newCountryChoiceBox;
+    ComboBox newCountryComboBox;
     @FXML
     CheckBox newActiveChkBox;
     @FXML
@@ -65,9 +65,9 @@ public class CustomersController implements Initializable {
     @FXML
     TextField updatePostalCodeTxtBox;
     @FXML
-    ChoiceBox updateCityChoiceBox;
+    ComboBox updateCityComboBox;
     @FXML
-    ChoiceBox updateCountryChoiceBox;
+    ComboBox updateCountryComboBox;
     @FXML
     CheckBox updateActiveChkBox;
     @FXML
@@ -90,6 +90,53 @@ public class CustomersController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
+        populateTable();
+    }
+    
+    @FXML
+    public void addCustomerBtnHandler() {
+        String name = newNameTxtBox.getText();
+        String Address = newAddressTxtBox.getText();
+        String Address2 = newAddress2TxtBox.getText();
+        String Phone = newPhoneTxtBox.getText();
+        String PostalCode = newPostalCodeTxtBox.getText();
+        String City = (String) newCityComboBox.getValue();
+        String Country = (String) newCountryComboBox.getValue();
+        
+        if (name != null && Address != null && Phone != null && PostalCode != null
+                && City != null && Country != null) {
+            try {
+                DBConnection.insert("", "");
+            } catch (SQLException e) {
+                System.out.println("Problem with DB insert");
+                e.printStackTrace();
+            } finally {
+                DBConnection.closeConn();
+            }
+        }
+    }
+    
+    @FXML
+    public void updateCustomerBtnHandler() {
+        
+    }
+    
+    @FXML
+    public void deleteCustomerBtnHandler() {
+        
+    }
+    
+    // this function will be used to populate the country box on initialization
+    public void populateCountry(ComboBox box){
+        
+    }
+    
+    // this function will be used to populate the city box when country is selected
+    public void populateCity(ComboBox box){
+        
+    }
+    
+    public void populateTable() {
         try {
             DBConnection.connect();
             ResultSet rs = DBConnection.query("*", "customer");
@@ -117,6 +164,5 @@ public class CustomersController implements Initializable {
         customerIDCol.setCellValueFactory(new PropertyValueFactory<Customer, Integer>("CustomerID"));
         customerNameCol.setCellValueFactory(new PropertyValueFactory<Customer, String>("CustomerName"));
         customerTable.setItems(observableCustomer);
-    }    
-    
+    }
 }

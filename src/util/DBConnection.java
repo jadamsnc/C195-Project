@@ -75,6 +75,14 @@ public class DBConnection {
         return rs;
     }
     
+    public static void insert(String TableName, String Values) throws SQLException{
+        DBConnection.connect();
+        Statement stmt;
+        stmt = dbconn.createStatement();
+        String insert = "INSERT INTO " + TableName + " VALUES " + Values + ";";
+        stmt.executeUpdate(insert);
+    }
+    
     public static String dateConvert(Date date) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return dateFormat.format(date);
