@@ -5,8 +5,17 @@
  */
 package c195project;
 
+import Models.Customer;
 import java.net.URL;
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Iterator;
 import java.util.ResourceBundle;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -15,6 +24,8 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
+import util.DBConnection;
 
 /**
  * FXML Controller class
@@ -66,13 +77,12 @@ public class CustomersController implements Initializable {
     @FXML
     TableView customerTable;
     @FXML
-    TableColumn customerIDCol;
+    TableColumn<Customer, Integer> customerIDCol;
     @FXML
-    TableColumn customerNameCol;
-    @FXML
-    TableColumn customerAddressCol;
+    TableColumn<Customer, String> customerNameCol;
     
-    
+    ArrayList<Customer> CustomerList = new ArrayList<>();
+    ObservableList<Customer> observableCustomer = FXCollections.observableList(CustomerList);
     
     /**
      * Initializes the controller class.
@@ -80,6 +90,33 @@ public class CustomersController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
+        try {
+            DBConnection.connect();
+            ResultSet rs = DBConnection.query("*", "customer");
+            while (rs.next()){
+                int customerID = rs.getInt("customerId");
+                String customerName = rs.getString("customerName");
+                int addressId = rs.getInt("addressId");
+                int active = rs.getInt("active");
+                // Calendar createDate = Calendar.getInstance();
+                // createDate.setTime(rs.getDate("createDate"));
+                // String createdBy = rs.getString("createdBy");
+                observableCustomer.add(new Customer(customerID, customerName, addressId, active));
+            }
+        } catch (SQLException e) {
+            System.out.println("DB failed");
+            e.printStackTrace();
+        } finally {
+            DBConnection.closeConn();
+        }
+        for (Iterator<Customer> it = observableCustomer.iterator(); it.hasNext();) {
+            Customer cust = it.next();
+            System.out.println(cust.getCustomerID());
+            System.out.println(cust.getCustomerName());
+        } 
+        customerIDCol.setCellValueFactory(new PropertyValueFactory<Customer, Integer>("CustomerID"));
+        customerNameCol.setCellValueFactory(new PropertyValueFactory<Customer, String>("CustomerName"));
+        customerTable.setItems(observableCustomer);
     }    
     
 }
