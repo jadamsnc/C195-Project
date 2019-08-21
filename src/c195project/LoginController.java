@@ -75,11 +75,14 @@ public class LoginController implements Initializable {
             // if any error occurs loading the window print error info to stdout
             // throw error message so user isn't confused about nothing happening
             try {
-                Parent mainWindowParent = FXMLLoader.load(getClass().getResource("MainWindow.fxml"));
-                Scene mainWindowScene = new Scene(mainWindowParent);
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("MainWindow.fxml"));
+                Parent root = loader.load();
+                MainWindowController controller = loader.getController();
+                Scene mainWindowScene = new Scene(root);
                 Stage mainWindow = (Stage) ((Node)event.getSource()).getScene().getWindow();
                 mainWindow.setTitle("Scheduler");
                 mainWindow.setScene(mainWindowScene);
+                controller.getUserName(userName);
                 mainWindow.show();
             } catch (IOException e) {
                 System.out.println("Failed to open main window: " + e.getStackTrace());

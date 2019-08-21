@@ -56,7 +56,6 @@ public class DBConnection {
     }
     
     public static ResultSet query(String selectValue, String fromValue, String whereValue) throws SQLException{
-        DBConnection.connect();
         Statement stmt;
         stmt = dbconn.createStatement();
         String query = "SELECT " + selectValue + " FROM " + fromValue + 
@@ -66,7 +65,6 @@ public class DBConnection {
     }
     
     public static ResultSet query(String selectValue, String fromValue) throws SQLException{
-        DBConnection.connect();
         Statement stmt;
         stmt = dbconn.createStatement();
         String query = "SELECT " + selectValue + " FROM " + fromValue + ";";
@@ -75,7 +73,6 @@ public class DBConnection {
     }
     
     public static void insert(String TableName, String Values) throws SQLException{
-        DBConnection.connect();
         Statement stmt;
         stmt = dbconn.createStatement();
         String insert = "INSERT INTO " + TableName + " VALUES " + Values + ";";
@@ -83,7 +80,6 @@ public class DBConnection {
     }
     
     public static void delete(String TableName, String Value) throws SQLException {
-        DBConnection.connect();
         Statement stmt;
         stmt = dbconn.createStatement();
         String delete = "DELETE FROM " + TableName + " WHERE " + Value + ";";
@@ -93,5 +89,12 @@ public class DBConnection {
     public static String dateConvert(Date date) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return dateFormat.format(date);
+    }
+    
+    public static void update(String TableName, String Values, String Where) throws SQLException {
+        Statement stmt;
+        stmt = dbconn.createStatement();
+        String update = "UPDATE " + TableName + " SET " + Values + " WHERE " + Where + ";";
+        stmt.executeUpdate(update);
     }
 }

@@ -17,6 +17,7 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.ResourceBundle;
 import java.util.function.Consumer;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import static javafx.collections.FXCollections.observableList;
 import javafx.collections.ObservableList;
@@ -26,6 +27,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -87,6 +89,9 @@ public class CustomersController implements Initializable {
     TableColumn<Customer, Integer> customerIDCol;
     @FXML
     TableColumn<Customer, String> customerNameCol;
+    @FXML
+    Label userNameLabel;
+    private String userName;
     
     ArrayList<Customer> CustomerList = new ArrayList<>();
     ObservableList<Customer> observableCustomer = FXCollections.observableList(CustomerList);
@@ -99,6 +104,34 @@ public class CustomersController implements Initializable {
         // TODO
         populateTable();
         populateCountry();
+        // Using a lambda here to add an action listener to the customer table
+        // this is easier than defining the action listener seperately in the class
+        // this listener type is not currently supported by scene builder
+        customerTable.getSelectionModel().selectedItemProperty().addListener((ObservableValue obs, Object oldSelection, Object newSelection) ->{
+            if (newSelection != null) {
+                Customer customer = (Customer) newSelection;
+                updateIDTxtBox.setText(Integer.toString(customer.getCustomerID()));
+                updateNameTxtBox.setText(customer.getCustomerName());
+                if (customer.getActive() == 1) {
+                    updateActiveChkBox.setSelected(true);
+                } else {
+                    updateActiveChkBox.setSelected(false);
+                }
+                try {
+                    DBConnection.connect();
+                    ResultSet rs = DBConnection.query("*", "address", "addressId=" + customer.getAddressID());
+                    rs.next();
+                    updateAddressTxtBox.setText(rs.getString("address"));
+                    updateAddress2TxtBox.setText(rs.getString("address2"));
+                    updatePostalCodeTxtBox.setText(rs.getString("postalCode"));
+                    updatePhoneTxtBox.setText(rs.getString("phone"));                    
+                } catch (SQLException e) {
+                    System.out.println("failed to query DB");
+                } finally {
+                    DBConnection.closeConn();
+                }
+            }
+        });
     }
     
     // this needs to be updated to get the user that is logged in instead of just using test
@@ -122,17 +155,15 @@ public class CustomersController implements Initializable {
                 ",'" + PostalCode + "','" + Phone + "', CURRENT_TIMESTAMP, 'test', CURRENT_TIMESTAMP, 'test')";
         if (name != null && Address != null && Phone != null && PostalCode != null
                 && city != null && country != null) {
-            
             try {
+                DBConnection.connect();
                 DBConnection.insert("address (address, address2, cityId, postalCode, phone, createDate, createdBy, lastUpdate, lastUpdateBy) ",
                         addressValues);
                 ResultSet rs = DBConnection.query("*","address", "address='" +Address + "'");
                 rs.next();
                 int AddressID = rs.getInt("addressId");
-                String customerValues = "('" + name + "'," + AddressID + "," + active + ", CURRENT_TIMESTAMP, 'test', CURRENT_TIMESTAMP, 'test')";
+                String customerValues = "('" + name + "'," + AddressID + "," + active + ", CURRENT_TIMESTAMP, '" + userName + "', CURRENT_TIMESTAMP, '" + userName + "')";
                 DBConnection.insert("customer (customerName, addressId, active, createDate, createdBy, lastUpdate, lastUpdateBy)", customerValues);
-                        
-                
             } catch (SQLException e) {
                 System.out.println("Problem with DB insert");
                 e.printStackTrace();
@@ -144,7 +175,38 @@ public class CustomersController implements Initializable {
     
     @FXML
     public void updateCustomerBtnHandler() {
-        
+        String name = updateNameTxtBox.getText();
+        String Address = updateAddressTxtBox.getText();
+        String Address2 = updateAddress2TxtBox.getText();
+        String Phone = updatePhoneTxtBox.getText();
+        String PostalCode = updatePostalCodeTxtBox.getText();
+        City city = (City) updateCityComboBox.getValue();
+        Country country = (Country) updateCountryComboBox.getValue();
+        int active;
+        if (updateActiveChkBox.isSelected()) {
+            active = 1;
+        } else {
+            active = 0;
+        }
+        if (!name.equals("") && !Address.equals("") && !Phone.equals("") && !PostalCode.equals("")
+                && city != null && country != null) {
+            if (customerTable.getSelectionModel().getSelectedItem() != null) {
+                Customer customer = (Customer) customerTable.getSelectionModel().getSelectedItem();
+                try {
+                    DBConnection.connect();
+                    DBConnection.update("customer", "customerName='" + name + "', active=" + active + ", lastUpdate=CURRENT_TIMESTAMP,"
+                            + "lastUpdateBy='" + userName + "' ", "customerId=" + customer.getCustomerID());
+                    DBConnection.update("address", "address='" +Address+"',address2='"+Address2+"',postalCode='" +
+                            PostalCode+"',phone='"+Phone+"',cityId="+city.getCityID()+",lastUpdate=CURRENT_TIMESTAMP,"
+                                    + "lastUpdateBy='"+userName+"' ","addressId="+customer.getAddressID());
+                } catch (SQLException e) {
+                    System.out.println("update failed");
+                } finally {
+                    DBConnection.closeConn();
+                }
+                populateTable();
+            }
+        }
     }
     
     @FXML
@@ -152,6 +214,7 @@ public class CustomersController implements Initializable {
         if (customerTable.getSelectionModel().getSelectedItem() != null) {
             Customer customer = (Customer) customerTable.getSelectionModel().getSelectedItem();
             try {
+                DBConnection.connect();
                 DBConnection.delete("customer", "customerId=" + customer.getCustomerID() + ";");
                 DBConnection.delete("address", "addressId=" + customer.getAddressID());
             } catch (SQLException e) {
@@ -188,6 +251,7 @@ public class CustomersController implements Initializable {
     public void populateCountry(){
         ArrayList<Country> countryList = new ArrayList();
         try {
+            DBConnection.connect();
             ResultSet rs = DBConnection.query("*", "country");
             while (rs.next()) {
                 int CountryID = rs.getInt("countryId");
@@ -213,6 +277,7 @@ public class CustomersController implements Initializable {
     public void populateCity(int countryID, ComboBox box){
         ArrayList<City> cityList = new ArrayList();
         try {
+            DBConnection.connect();
             ResultSet rs = DBConnection.query("*", "city", "countryId='" + countryID + "'");
             while (rs.next()) {
                 int CityID = rs.getInt("cityId");
@@ -234,6 +299,7 @@ public class CustomersController implements Initializable {
     
     public void populateTable() {
         try {
+            customerTable.getItems().clear();
             DBConnection.connect();
             ResultSet rs = DBConnection.query("*", "customer");
             while (rs.next()){
@@ -241,9 +307,6 @@ public class CustomersController implements Initializable {
                 String customerName = rs.getString("customerName");
                 int addressId = rs.getInt("addressId");
                 int active = rs.getInt("active");
-                // Calendar createDate = Calendar.getInstance();
-                // createDate.setTime(rs.getDate("createDate"));
-                // String createdBy = rs.getString("createdBy");
                 observableCustomer.add(new Customer(customerID, customerName, addressId, active));
             }
         } catch (SQLException e) {
@@ -260,5 +323,10 @@ public class CustomersController implements Initializable {
         customerIDCol.setCellValueFactory(new PropertyValueFactory<>("CustomerID"));
         customerNameCol.setCellValueFactory(new PropertyValueFactory<>("CustomerName"));
         customerTable.setItems(observableCustomer);
+    }
+    
+    public void getUserName(String uName) {
+        userName = uName;
+        userNameLabel.setText("User: " + userName);
     }
 }

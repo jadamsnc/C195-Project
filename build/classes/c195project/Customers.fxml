@@ -72,5 +72,6 @@
         </tabs>
       </TabPane>
       <Button id="deleteCustomerBtn" fx:id="deleteCustomerBtn" layoutX="488.0" layoutY="390.0" mnemonicParsing="false" onAction="#deleteCustomerBtnHandler" text="Delete Customer" />
+      <Label fx:id="userNameLabel" layoutX="14.0" layoutY="394.0" text="User: " />
    </children>
 </AnchorPane>

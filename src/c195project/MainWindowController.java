@@ -19,6 +19,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.stage.Stage;
 
 /**
@@ -37,11 +38,29 @@ public class MainWindowController implements Initializable{
     Button reportsBtn;
     @FXML
     Button logFileBtn;
+    @FXML
+    Label userNameLabel;
     private String userName;
     
     @FXML
     void CustomersBtnClick (ActionEvent event) {
-        NewFXWindow("c195project/Customers.fxml", "Customers");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Customers.fxml"));
+            Parent root = loader.load();
+            CustomersController controller = loader.getController();
+            Stage stage = new Stage();
+            stage.setTitle("Customers");
+            stage.setScene(new Scene(root));
+            controller.getUserName(userName);
+            stage.show();
+        } catch (IOException e) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Failed to load window");
+            alert.setContentText("Sorry, the window has failed to load");
+            alert.showAndWait();
+            e.printStackTrace();
+        }
     }
     
     @FXML
@@ -82,7 +101,8 @@ public class MainWindowController implements Initializable{
     // class to load JavaFX windows to avoid duplicating code
     private void NewFXWindow(String path, String title) {
         try {
-            Parent root = FXMLLoader.load(getClass().getClassLoader().getResource(path));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(path));
+            Parent root = loader.load();
             Stage stage = new Stage();
             stage.setTitle(title);
             stage.setScene(new Scene(root));
@@ -99,5 +119,6 @@ public class MainWindowController implements Initializable{
     
     public void getUserName(String uName) {
         userName = uName;
+        userNameLabel.setText("User: " + userName);
     }
 }
