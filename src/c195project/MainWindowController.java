@@ -37,6 +37,7 @@ public class MainWindowController implements Initializable{
     Button reportsBtn;
     @FXML
     Button logFileBtn;
+    private String userName;
     
     @FXML
     void CustomersBtnClick (ActionEvent event) {
@@ -96,4 +97,7 @@ public class MainWindowController implements Initializable{
         }
     }
     
+    public void getUserName(String uName) {
+        userName = uName;
+    }
 }

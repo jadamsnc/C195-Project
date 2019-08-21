@@ -9,6 +9,8 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -25,6 +27,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import util.DBConnection;
 
 /**
  *
@@ -52,7 +55,9 @@ public class LoginController implements Initializable {
     // I need to recreate this to use the mysql server for user login
     @FXML
     private void LoginButtonHandler(ActionEvent event) {
-        if (nameBox.getText().equals("test") && passBox.getText().equals("test")) {
+        String userName = nameBox.getText();
+        String password = passBox.getText();
+        if (loginCheck(userName, password)) {
             // clear any error messages on the window and then write the login time
             // to the log file, catch any IO issues with writing to the file and 
             // print the stack trace to stdout
@@ -61,7 +66,7 @@ public class LoginController implements Initializable {
                 System.out.println("success");
                 BufferedWriter writer = new BufferedWriter(new FileWriter("LoginRecord.txt", true));
                 writer.newLine();
-                writer.write("Username: " + nameBox.getText() + " Time: " + LocalDateTime.now());
+                writer.write("Username: " + userName + " Time: " + LocalDateTime.now());
                 writer.close();
             } catch (IOException e) {
                 System.out.println("unable to write to file :" + e.getStackTrace() );
@@ -102,4 +107,20 @@ public class LoginController implements Initializable {
         welcomeLbl.setText(rb.getString("welcome"));
     }    
     
+    private boolean loginCheck(String userName, String Password){
+        try {
+            DBConnection.connect();
+            ResultSet rs = DBConnection.query("*", "user", "userName='"+userName +"'");
+            while (rs.next()) {
+                if (rs.getString("password").equals(Password)) {
+                    return true;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("database connection failed");
+        } finally {
+            DBConnection.closeConn();
+        }
+        return false;
+    }
 }

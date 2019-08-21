@@ -101,6 +101,7 @@ public class CustomersController implements Initializable {
         populateCountry();
     }
     
+    // this needs to be updated to get the user that is logged in instead of just using test
     @FXML
     public void addCustomerBtnHandler() {
         String name = newNameTxtBox.getText();
@@ -108,15 +109,33 @@ public class CustomersController implements Initializable {
         String Address2 = newAddress2TxtBox.getText();
         String Phone = newPhoneTxtBox.getText();
         String PostalCode = newPostalCodeTxtBox.getText();
-        String City = (String) newCityComboBox.getValue();
-        String Country = (String) newCountryComboBox.getValue();
+        City city = (City) newCityComboBox.getValue();
+        Country country = (Country) newCountryComboBox.getValue();
+        int active;
+        if (newActiveChkBox.isSelected()) {
+            active = 1;
+        } else {
+            active = 0;
+        }
         
+        String addressValues = "('" + Address + "','" + Address2 + "'," + city.getCityID() +
+                ",'" + PostalCode + "','" + Phone + "', CURRENT_TIMESTAMP, 'test', CURRENT_TIMESTAMP, 'test')";
         if (name != null && Address != null && Phone != null && PostalCode != null
-                && City != null && Country != null) {
+                && city != null && country != null) {
+            
             try {
-                DBConnection.insert("", "");
+                DBConnection.insert("address (address, address2, cityId, postalCode, phone, createDate, createdBy, lastUpdate, lastUpdateBy) ",
+                        addressValues);
+                ResultSet rs = DBConnection.query("*","address", "address='" +Address + "'");
+                rs.next();
+                int AddressID = rs.getInt("addressId");
+                String customerValues = "('" + name + "'," + AddressID + "," + active + ", CURRENT_TIMESTAMP, 'test', CURRENT_TIMESTAMP, 'test')";
+                DBConnection.insert("customer (customerName, addressId, active, createDate, createdBy, lastUpdate, lastUpdateBy)", customerValues);
+                        
+                
             } catch (SQLException e) {
                 System.out.println("Problem with DB insert");
+                e.printStackTrace();
             } finally {
                 DBConnection.closeConn();
             }
@@ -130,7 +149,21 @@ public class CustomersController implements Initializable {
     
     @FXML
     public void deleteCustomerBtnHandler() {
-        
+        if (customerTable.getSelectionModel().getSelectedItem() != null) {
+            Customer customer = (Customer) customerTable.getSelectionModel().getSelectedItem();
+            try {
+                DBConnection.delete("customer", "customerId=" + customer.getCustomerID() + ";");
+                DBConnection.delete("address", "addressId=" + customer.getAddressID());
+            } catch (SQLException e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText("Problem deleting from database");
+                alert.setContentText("Sorry, the customer could not be deleted");
+                alert.showAndWait();
+            } finally {
+                DBConnection.closeConn();
+            }
+        }
     }
     
     @FXML
