@@ -9,14 +9,11 @@ import Models.City;
 import Models.Country;
 import Models.Customer;
 import java.net.URL;
-import java.sql.Date;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Iterator;
 import java.util.ResourceBundle;
-import java.util.function.Consumer;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import static javafx.collections.FXCollections.observableList;
@@ -43,58 +40,59 @@ import util.DBConnection;
  */
 public class CustomersController implements Initializable {
     
+    private DBConnection conn = DBConnection.getDBConn();
     @FXML
-    TextField newNameTxtBox;
+    private TextField newNameTxtBox;
     @FXML
-    TextField newAddressTxtBox;
+    private TextField newAddressTxtBox;
     @FXML
-    TextField newAddress2TxtBox;
+    private TextField newAddress2TxtBox;
     @FXML
-    TextField newPhoneTxtBox;
+    private TextField newPhoneTxtBox;
     @FXML
-    TextField newPostalCodeTxtBox;
+    private TextField newPostalCodeTxtBox;
     @FXML
-    ComboBox newCityComboBox;
+    private ComboBox newCityComboBox;
     @FXML
-    ComboBox newCountryComboBox;
+    private ComboBox newCountryComboBox;
     @FXML
-    CheckBox newActiveChkBox;
+    private CheckBox newActiveChkBox;
     @FXML
-    Button addCustomerBtn;
+    private Button addCustomerBtn;
     @FXML
-    TextField updateIDTxtBox;
+    private TextField updateIDTxtBox;
     @FXML
-    TextField updateNameTxtBox;
+    private TextField updateNameTxtBox;
     @FXML
-    TextField updateAddressTxtBox;
+    private TextField updateAddressTxtBox;
     @FXML
-    TextField updateAddress2TxtBox;
+    private TextField updateAddress2TxtBox;
     @FXML
-    TextField updatePhoneTxtBox;
+    private TextField updatePhoneTxtBox;
     @FXML
-    TextField updatePostalCodeTxtBox;
+    private TextField updatePostalCodeTxtBox;
     @FXML
-    ComboBox updateCityComboBox;
+    private ComboBox updateCityComboBox;
     @FXML
-    ComboBox updateCountryComboBox;
+    private ComboBox updateCountryComboBox;
     @FXML
-    CheckBox updateActiveChkBox;
+    private CheckBox updateActiveChkBox;
     @FXML
-    Button updateCustomerBtn;
+    private Button updateCustomerBtn;
     @FXML
-    Button deleteCustomerBtn;
+    private Button deleteCustomerBtn;
     @FXML
-    TableView customerTable;
+    private TableView customerTable;
     @FXML
-    TableColumn<Customer, Integer> customerIDCol;
+    private TableColumn<Customer, Integer> customerIDCol;
     @FXML
-    TableColumn<Customer, String> customerNameCol;
+    private TableColumn<Customer, String> customerNameCol;
     @FXML
-    Label userNameLabel;
+    private Label userNameLabel;
     private String userName;
     
-    ArrayList<Customer> CustomerList = new ArrayList<>();
-    ObservableList<Customer> observableCustomer = FXCollections.observableList(CustomerList);
+    private ArrayList<Customer> CustomerList = new ArrayList<>();
+    private ObservableList<Customer> observableCustomer = FXCollections.observableList(CustomerList);
     
     /**
      * Initializes the controller class.
@@ -118,7 +116,7 @@ public class CustomersController implements Initializable {
                     updateActiveChkBox.setSelected(false);
                 }
                 try {
-                    DBConnection.connect();
+                    conn.connect();
                     ResultSet rs = DBConnection.query("*", "address", "addressId=" + customer.getAddressID());
                     rs.next();
                     updateAddressTxtBox.setText(rs.getString("address"));
@@ -153,8 +151,7 @@ public class CustomersController implements Initializable {
         
         String addressValues = "('" + Address + "','" + Address2 + "'," + city.getCityID() +
                 ",'" + PostalCode + "','" + Phone + "', CURRENT_TIMESTAMP, 'test', CURRENT_TIMESTAMP, 'test')";
-        if (name != null && Address != null && Phone != null && PostalCode != null
-                && city != null && country != null) {
+        if (name != null && Address != null && Phone != null && PostalCode != null) {
             try {
                 DBConnection.connect();
                 DBConnection.insert("address (address, address2, cityId, postalCode, phone, createDate, createdBy, lastUpdate, lastUpdateBy) ",

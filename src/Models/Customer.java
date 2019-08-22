@@ -16,10 +16,6 @@ public class Customer {
     private String CustomerName;
     private int AddressID;
     private int Active;
-    // private Calendar CreateDate;
-    // private String CreatedBy;
-    // private Calendar LastUpdate;
-    // private String LastUpdateBy;
     
     public Customer (int customerID, String customerName, int addressID, int active){
         CustomerID = customerID;
