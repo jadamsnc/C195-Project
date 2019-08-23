@@ -18,25 +18,46 @@ public class Customer {
     private int Active;
     
     public Customer (int customerID, String customerName, int addressID, int active){
-        CustomerID = customerID;
-        CustomerName = customerName;
-        AddressID = addressID;
-        Active = active;
+        setCustomerID(customerID);
+        setCustomerName(customerName);
+        setAddressID(addressID);
+        setActive(active);
+    }
+    
+    public Customer(int customerID, String customerName) {
+        setCustomerID(customerID);
+        setCustomerName(customerName);
     }
     
     public int getCustomerID () {
         return CustomerID;
     }
     
+    public void setCustomerID (int custid) {
+        CustomerID = custid;
+    }
+    
     public String getCustomerName() {
         return CustomerName;
+    }
+    
+    public void setCustomerName(String name) {
+        CustomerName = name;
     }
     
     public int getAddressID() {
         return AddressID;
     }
     
+    public void setAddressID(int addID) {
+        AddressID = addID;
+    }
+    
     public int getActive() {
         return Active;
+    }
+    
+    public void setActive(int active) {
+        Active = active;
     }
 }

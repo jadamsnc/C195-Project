@@ -65,7 +65,23 @@ public class MainWindowController implements Initializable{
     
     @FXML
     void AppointmentsBtnClick (ActionEvent event) {
-        NewFXWindow("c195project/Appointments.fxml", "Appointments");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Appointments.fxml"));
+            Parent root = loader.load();
+            AppointmentsController controller = loader.getController();
+            Stage stage = new Stage();
+            stage.setTitle("Appointments");
+            stage.setScene(new Scene(root));
+            controller.getUserName(userName);
+            stage.show();
+        } catch (IOException e) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Failed to load window");
+            alert.setContentText("Sorry, the window has failed to load");
+            alert.showAndWait();
+            e.printStackTrace();
+        }
     }
     
     @FXML
@@ -113,7 +129,6 @@ public class MainWindowController implements Initializable{
             alert.setHeaderText("Failed to load window");
             alert.setContentText("Sorry, the window has failed to load");
             alert.showAndWait();
-            e.printStackTrace();
         }
     }
     
