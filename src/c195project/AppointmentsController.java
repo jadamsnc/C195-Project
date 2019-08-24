@@ -13,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.ResourceBundle;
@@ -90,18 +91,7 @@ public class AppointmentsController implements Initializable {
         userNameLabel.setText("User: " + userName);
         populateTimes();
         populateCustomers();
-        try {
-            DBConnection.connect();
-            ResultSet rs = DBConnection.query("*", "appointment");
-            while (rs.next()) {
-                String date = rs.getString("start");
-                System.out.println(TimeConverter.getUTCTime(date));
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(AppointmentsController.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            DBConnection.closeConn();
-        }
+        populateApptTable(1);
     }    
     
     @FXML
@@ -202,7 +192,9 @@ public class AppointmentsController implements Initializable {
                 String contact = rs.getString("contact");
                 String type = rs.getString("type");
                 String url = rs.getString("url");
-                obsApptList.add(new Appointment(apptId, customerId, userId, title, description, location, contact, type, url));
+                ZonedDateTime start = TimeConverter.getLocalTime(rs.getString("start"));
+                ZonedDateTime end = TimeConverter.getLocalTime(rs.getString("end"));
+                obsApptList.add(new Appointment(apptId, customerId, userId, title, description, location, contact, type, url, start, end));
             }
         } catch (SQLException e) {
             

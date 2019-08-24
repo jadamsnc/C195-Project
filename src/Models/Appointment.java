@@ -5,6 +5,8 @@
  */
 package Models;
 
+import java.time.ZonedDateTime;
+
 /**
  *
  * @author jeremy
@@ -19,10 +21,12 @@ public class Appointment {
     private String Contact;
     private String Type;
     private String URL;
+    private ZonedDateTime Start;
+    private ZonedDateTime End;
     
     
     public Appointment(int appointmentID, int custId, int userId, String title, String description,
-            String location, String contact, String type, String url) {
+            String location, String contact, String type, String url, ZonedDateTime start, ZonedDateTime end) {
         setAppointmentID(appointmentID);
         setCustomerID(custId);
         setUserID(userId);
@@ -32,10 +36,12 @@ public class Appointment {
         setContact(contact);
         setType(type);
         setURL(url);
+        setStart(start);
+        setEnd(end);
     }
     
     public Appointment(int custId, int userId, String title, String description,
-            String location, String contact, String type, String url) {
+            String location, String contact, String type, String url, ZonedDateTime start, ZonedDateTime end) {
         setCustomerID(custId);
         setUserID(userId);
         setTitle(title);
@@ -44,6 +50,8 @@ public class Appointment {
         setContact(contact);
         setType(type);
         setURL(url);
+        setStart(start);
+        setEnd(end);
     }
     
     public int getAppointmentID() {
@@ -116,5 +124,25 @@ public class Appointment {
     
     public void setURL(String url) {
         URL = url;
+    }
+    
+    public ZonedDateTime getStart() {
+        return Start;
+    }
+    
+    public void setStart(ZonedDateTime start) {
+        Start = start;
+    }
+    
+    public ZonedDateTime getEnd() {
+        return End;
+    }
+    
+    public void setEnd(ZonedDateTime end) {
+        if (end.compareTo(getStart()) < 1) {
+            throw (new IllegalArgumentException("End time cannot be before start time"));
+        } else {
+            End = end;
+        }
     }
 }

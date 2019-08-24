@@ -12,6 +12,7 @@ import java.net.URL;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
@@ -28,6 +29,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import util.DBConnection;
+import util.TimeConverter;
 
 /**
  *
@@ -58,19 +60,8 @@ public class LoginController implements Initializable {
         String userName = nameBox.getText();
         String password = passBox.getText();
         if (loginCheck(userName, password)) {
-            // clear any error messages on the window and then write the login time
-            // to the log file, catch any IO issues with writing to the file and 
-            // print the stack trace to stdout
-            try {
-                errorLbl.setText("");
-                System.out.println("success");
-                BufferedWriter writer = new BufferedWriter(new FileWriter("LoginRecord.txt", true));
-                writer.newLine();
-                writer.write("Username: " + userName + " Time: " + LocalDateTime.now());
-                writer.close();
-            } catch (IOException e) {
-                System.out.println("unable to write to file :" + e.getStackTrace() );
-            }
+            logWriter(userName);
+            upcomingApptCheck(userName);
             // change scene to the main program window
             // if any error occurs loading the window print error info to stdout
             // throw error message so user isn't confused about nothing happening
@@ -125,5 +116,56 @@ public class LoginController implements Initializable {
             DBConnection.closeConn();
         }
         return false;
+    }
+    
+    private void upcomingApptCheck(String userName) {
+        // Check for appointment within 15 minutes and alert user if one exists
+            try {
+                DBConnection.connect();
+                ResultSet user = DBConnection.query("*", "user", "userName='" + userName + "'");
+                user.next();
+                int userId = user.getInt("userId");
+                ResultSet rs = DBConnection.query("*", "appointment", "userId=" + userId);
+                ZonedDateTime currentTime = ZonedDateTime.now();
+                int year = currentTime.getYear();
+                int day = currentTime.getDayOfYear();
+                int month = currentTime.getMonthValue();
+                int time = (currentTime.getHour() * 60) + (currentTime.getMinute());
+                while (rs.next()) {
+                    ZonedDateTime appt = TimeConverter.getLocalTime(rs.getString("start"));
+                    int apptYear = appt.getYear();
+                    int apptDay = appt.getDayOfYear();
+                    int apptMonth = appt.getMonthValue();
+                    int apptTime = (appt.getHour() * 60) + (appt.getMinute());
+                    if (year == apptYear && day == apptDay && month == apptMonth
+                            && (apptTime - time) > -1 && (apptTime - time) < 16) {
+                        Alert alert = new Alert(AlertType.INFORMATION);
+                        alert.setTitle("Upcoming Appointment");
+                        alert.setHeaderText("Appointment starting within next 15 minutes");
+                        alert.setContentText("You have an appointment starting within the next 15 minutes");
+                        alert.showAndWait();
+                    }
+                }
+            } catch (SQLException e) {
+
+            } finally {
+                DBConnection.closeConn();
+            }
+    }
+    
+    private void logWriter(String userName) {
+        // clear any error messages on the window and then write the login time
+        // to the log file, catch any IO issues with writing to the file and 
+        // print the stack trace to stdout
+        try {
+                errorLbl.setText("");
+                System.out.println("success");
+                BufferedWriter writer = new BufferedWriter(new FileWriter("LoginRecord.txt", true));
+                writer.newLine();
+                writer.write("Username: " + userName + " Time: " + LocalDateTime.now());
+                writer.close();
+            } catch (IOException e) {
+                System.out.println("unable to write to file :" + e.getStackTrace() );
+            }
     }
 }
