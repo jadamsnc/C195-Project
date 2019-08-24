@@ -10,6 +10,7 @@ package Models;
  * @author jeremy
  */
 public class Appointment {
+    private int AppointmentID;
     private int CustomerID;
     private int UserID;
     private String Title;
@@ -18,6 +19,20 @@ public class Appointment {
     private String Contact;
     private String Type;
     private String URL;
+    
+    
+    public Appointment(int appointmentID, int custId, int userId, String title, String description,
+            String location, String contact, String type, String url) {
+        setAppointmentID(appointmentID);
+        setCustomerID(custId);
+        setUserID(userId);
+        setTitle(title);
+        setDescription(description);
+        setLocation(location);
+        setContact(contact);
+        setType(type);
+        setURL(url);
+    }
     
     public Appointment(int custId, int userId, String title, String description,
             String location, String contact, String type, String url) {
@@ -29,6 +44,14 @@ public class Appointment {
         setContact(contact);
         setType(type);
         setURL(url);
+    }
+    
+    public int getAppointmentID() {
+        return AppointmentID;
+    }
+    
+    public void setAppointmentID(int appointmentID) {
+        AppointmentID = appointmentID;
     }
     
     public int getCustomerID() {

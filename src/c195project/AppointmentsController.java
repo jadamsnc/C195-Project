@@ -5,14 +5,22 @@
  */
 package c195project;
 
+import Models.Appointment;
 import Models.Customer;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.collections.FXCollections;
 import static javafx.collections.FXCollections.observableList;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -25,6 +33,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import util.CustomerConverter;
 import util.DBConnection;
+import util.TimeConverter;
 
 /**
  * FXML Controller class
@@ -63,12 +72,14 @@ public class AppointmentsController implements Initializable {
     @FXML
     private TableView apptTableView;
     @FXML
-    private TableColumn dateTableColumn;
+    private TableColumn<Appointment, String> dateTableColumn;
     @FXML
-    private TableColumn timeTableColumn;
+    private TableColumn<Appointment, LocalDateTime> timeTableColumn;
     @FXML
-    private TableColumn descriptionTableColumn;
+    private TableColumn<Appointment, String> descriptionTableColumn;
     private String userName;
+    private ArrayList<Appointment> apptList = new ArrayList<>();
+    private ObservableList<Appointment> obsApptList= FXCollections.observableList(apptList);
 
     /**
      * Initializes the controller class.
@@ -79,6 +90,18 @@ public class AppointmentsController implements Initializable {
         userNameLabel.setText("User: " + userName);
         populateTimes();
         populateCustomers();
+        try {
+            DBConnection.connect();
+            ResultSet rs = DBConnection.query("*", "appointment");
+            while (rs.next()) {
+                String date = rs.getString("start");
+                System.out.println(TimeConverter.getUTCTime(date));
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(AppointmentsController.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            DBConnection.closeConn();
+        }
     }    
     
     @FXML
@@ -162,6 +185,8 @@ public class AppointmentsController implements Initializable {
         }
     }
     
+    
+    // this needs lots of work
     public void populateApptTable(int CustomerId) {
         apptTableView.getItems().clear();
         try {
@@ -174,12 +199,22 @@ public class AppointmentsController implements Initializable {
                 String title = rs.getString("title");
                 String description = rs.getString("description");
                 String location = rs.getString("location");
-                
+                String contact = rs.getString("contact");
+                String type = rs.getString("type");
+                String url = rs.getString("url");
+                obsApptList.add(new Appointment(apptId, customerId, userId, title, description, location, contact, type, url));
             }
         } catch (SQLException e) {
             
         } finally {
             DBConnection.closeConn();
         }
+        obsApptList.stream().map((appt) -> {
+            System.out.println(appt.getAppointmentID());
+            return appt;
+        }).forEachOrdered((Appointment appt) -> {
+            System.out.println(appt.getTitle());
+        }); 
+//        
     }
 }
