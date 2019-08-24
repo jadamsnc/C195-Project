@@ -60,5 +60,6 @@
         </columns>
       </TableView>
       <Button fx:id="submitBtn" layoutX="223.0" layoutY="338.0" mnemonicParsing="false" onAction="#submitAppt" prefHeight="25.0" prefWidth="74.0" text="Submit" />
+      <Button fx:id="deleteBtn" layoutX="428.0" layoutY="353.0" mnemonicParsing="false" onAction="#deleteAppt" prefHeight="25.0" prefWidth="74.0" text="Delete" />
    </children>
 </AnchorPane>

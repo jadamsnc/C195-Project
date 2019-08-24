@@ -59,6 +59,8 @@ public class AppointmentsController implements Initializable {
     @FXML
     private Button submitButton;
     @FXML
+    private Button deleteBtn;
+    @FXML
     private TableView apptTableView;
     @FXML
     private TableColumn dateTableColumn;
@@ -91,6 +93,11 @@ public class AppointmentsController implements Initializable {
     
     @FXML
     public void submitAppt() {
+        
+    }
+    
+    @FXML
+    public void deleteAppt() {
         
     }
     
@@ -155,7 +162,24 @@ public class AppointmentsController implements Initializable {
         }
     }
     
-    public void populateApptTable() {
-        
+    public void populateApptTable(int CustomerId) {
+        apptTableView.getItems().clear();
+        try {
+            DBConnection.connect();
+            ResultSet rs = DBConnection.query("*", "appointment", "customerId=" + CustomerId);
+            while (rs.next()) {
+                int apptId = rs.getInt("appointmentId");
+                int customerId = rs.getInt("customerId");
+                int userId = rs.getInt("userId");
+                String title = rs.getString("title");
+                String description = rs.getString("description");
+                String location = rs.getString("location");
+                
+            }
+        } catch (SQLException e) {
+            
+        } finally {
+            DBConnection.closeConn();
+        }
     }
 }
