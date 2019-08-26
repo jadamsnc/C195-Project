@@ -7,7 +7,9 @@ package c195project;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Label;
 
 /**
  * FXML Controller class
@@ -15,6 +17,11 @@ import javafx.fxml.Initializable;
  * @author malic
  */
 public class ReportsController implements Initializable {
+    
+    String userName;
+    int userId;
+    @FXML
+    private Label userNameLabel;
 
     /**
      * Initializes the controller class.
@@ -23,5 +30,11 @@ public class ReportsController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
     }    
+    
+    public void getUserName(String uName, int uId) {
+        userName = uName;
+        userId = uId;
+        userNameLabel.setText("User: " + userName);
+    }
     
 }

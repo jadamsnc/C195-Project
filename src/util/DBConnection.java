@@ -5,12 +5,14 @@
  */
 package util;
 
+import Models.Appointment;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 /**
@@ -101,5 +103,20 @@ public class DBConnection {
         stmt = conn.createStatement();
         String update = "UPDATE " + TableName + " SET " + Values + " WHERE " + Where + ";";
         stmt.executeUpdate(update);
+    }
+    
+    public static Appointment getAppointment(ResultSet rs) throws SQLException{
+        int apptId = rs.getInt("appointmentId");
+        int customerId = rs.getInt("customerId");
+        int userId = rs.getInt("userId");
+        String title = rs.getString("title");
+        String description = rs.getString("description");
+        String location = rs.getString("location");
+        String contact = rs.getString("contact");
+        String type = rs.getString("type");
+        String url = rs.getString("url");
+        ZonedDateTime start = TimeConverter.getLocalTime(rs.getString("start"));
+        ZonedDateTime end = TimeConverter.getLocalTime(rs.getString("end"));
+        return new Appointment(apptId, customerId, userId, title, description, location, contact, type, url, start, end);
     }
 }

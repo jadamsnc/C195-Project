@@ -375,18 +375,7 @@ public class AppointmentsController implements Initializable {
             DBConnection.connect();
             ResultSet rs = DBConnection.query("*", "appointment", "customerId=" + CustomerId);
             while (rs.next()) {
-                int apptId = rs.getInt("appointmentId");
-                int customerId = rs.getInt("customerId");
-                int userId = rs.getInt("userId");
-                String title = rs.getString("title");
-                String description = rs.getString("description");
-                String location = rs.getString("location");
-                String contact = rs.getString("contact");
-                String type = rs.getString("type");
-                String url = rs.getString("url");
-                ZonedDateTime start = TimeConverter.getLocalTime(rs.getString("start"));
-                ZonedDateTime end = TimeConverter.getLocalTime(rs.getString("end"));
-                obsApptList.add(new Appointment(apptId, customerId, userId, title, description, location, contact, type, url, start, end));
+                obsApptList.add(DBConnection.getAppointment(rs));
             }
             dateTableColumn.setCellValueFactory(new PropertyValueFactory<>("Start"));
             typeTableColumn.setCellValueFactory(new PropertyValueFactory<>("Type"));

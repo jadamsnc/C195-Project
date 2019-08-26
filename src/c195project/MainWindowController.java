@@ -90,12 +90,44 @@ public class MainWindowController implements Initializable{
     
     @FXML
     void CalendarBtnClick (ActionEvent event) {
-        NewFXWindow("c195project/Calendar.fxml", "Calendar");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Calendar.fxml"));
+            Parent root = loader.load();
+            CalendarController controller = loader.getController();
+            Stage stage = new Stage();
+            stage.setTitle("Calendar");
+            stage.setScene(new Scene(root));
+            controller.getUserName(userName, userId);
+            stage.show();
+        } catch (IOException e) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Failed to load window");
+            alert.setContentText("Sorry, the window has failed to load");
+            alert.showAndWait();
+            e.printStackTrace();
+        }
     }
     
     @FXML
     void ReportsBtnClick (ActionEvent event) {
-        NewFXWindow("c195project/Reports.fxml", "Reports");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Reports.fxml"));
+            Parent root = loader.load();
+            ReportsController controller = loader.getController();
+            Stage stage = new Stage();
+            stage.setTitle("Reports");
+            stage.setScene(new Scene(root));
+            controller.getUserName(userName, userId);
+            stage.show();
+        } catch (IOException e) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Failed to load window");
+            alert.setContentText("Sorry, the window has failed to load");
+            alert.showAndWait();
+            e.printStackTrace();
+        }
     }
     
     @FXML

@@ -145,4 +145,21 @@ public class Appointment {
     public void setEnd(ZonedDateTime end) {
         End = end;
     }
+    @Override
+    public String toString() {
+        String startDT = TimeConverter.getDateTimeString(getStart());
+        String endDT = TimeConverter.getDateTimeString(getEnd());
+        String customerName = "failed to retrieve name";
+        try {
+            DBConnection.connect();
+            ResultSet rs =DBConnection.query("*", "customer", "customerId = "+ getCustomerID());
+            rs.next();
+            customerName = rs.getString("customerName");
+        } catch (SQLException e) {
+            System.out.println("Failed to retried Customer Name");
+        } finally {
+            DBConnection.closeConn();
+        }
+        return customerName + " Start: " + startDT + " End: " + endDT + " Type: " + getType();
+    }
 }
