@@ -68,18 +68,28 @@ public class TimeConverter {
         DateTimeFormatter customFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         return customFormatter.format(zdt);
     }
-    public static boolean conflictCheck(int userId, ZonedDateTime start, ZonedDateTime end) {
-        try {
-                DBConnection.connect();
-                ResultSet rs = DBConnection.query("*", "appointment", "userId=" + userId);
-                // this needs to be done
-                
-                return true;
-            } catch (SQLException e) {
-                System.out.println("problem with db connection");
-            } finally {
-                DBConnection.closeConn();
-            }
-        return false;
+    public static boolean conflictCheck(int userId, ZonedDateTime start, ZonedDateTime end, int ApptID) {
+        if (end.compareTo(start) < 1) {
+            return true;
+        } else {
+            try {
+                    DBConnection.connect();
+                    ResultSet rs = DBConnection.query("*", "appointment", "userId=" + userId + " AND (("
+                            + "start BETWEEN '" + getDateTimeString(start) + "' AND '" +
+                            getDateTimeString(end) + "') OR (end BETWEEN '" + getDateTimeString(end) +
+                            "' AND '" + getDateTimeString(end) + "')) AND NOT appointmentId = " + ApptID);
+                    if (rs.next()) {
+                        System.out.println("ApptID: " + ApptID);
+                        System.out.println(rs.getInt("appointmentId"));
+                        return true;
+                    }
+                    return false;
+                } catch (SQLException e) {
+                    System.out.println("problem with db connection");
+                } finally {
+                    DBConnection.closeConn();
+                }
+            return true;
+        }
     }
 }

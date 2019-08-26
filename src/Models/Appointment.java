@@ -143,10 +143,6 @@ public class Appointment {
     }
     
     public void setEnd(ZonedDateTime end) {
-        if (end.compareTo(getStart()) < 1 && TimeConverter.conflictCheck(UserID, Start, end)) {
-            throw (new IllegalArgumentException("End time cannot be before start time"));
-        } else {
-            End = end;
-        }
+        End = end;
     }
 }

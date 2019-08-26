@@ -19,6 +19,8 @@ import static javafx.collections.FXCollections.observableList;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
@@ -101,38 +103,131 @@ public class AppointmentsController implements Initializable {
     @FXML
     public void editAppt() {
         if (edit == false) {
-            
-            
+            if (apptTableView.getSelectionModel().getSelectedItem() != null) {
+                Appointment appt = (Appointment) apptTableView.getSelectionModel().getSelectedItem();
+                titleTxtBox.setText(appt.getTitle());
+                descriptionTxtBox.setText(appt.getDescription());
+                locationTxtBox.setText(appt.getLocation());
+                contactTxtBox.setText(appt.getContact());
+                typeTxtBox.setText(appt.getType());
+                urlTxtBox.setText(appt.getURL());
+                customerComboBox.setDisable(true);
+                dateDatePicker.setValue(LocalDate.of(appt.getStart().getYear(), appt.getStart().getMonth(), appt.getStart().getDayOfMonth()));
+                int startHour = appt.getStart().getHour();
+                String startMinute = Integer.toString(appt.getStart().getMinute());
+                int endHour = appt.getEnd().getHour();
+                String endMinute = Integer.toString(appt.getEnd().getMinute());
+                if (startMinute.equals("0")) {
+                    startMinute = "00";
+                }
+                if (endMinute.equals("0")) {
+                    endMinute = "00";
+                }
+                if (startHour > 12) {
+                    startHour -= 12;
+                    startTimeChoiceBox.setValue(startHour + ":" + startMinute + " PM");
+                } else if (startHour == 12) {
+                    startTimeChoiceBox.setValue(startHour + ":" + startMinute + " PM");
+                } else {
+                    startTimeChoiceBox.setValue(startHour + ":" + startMinute + " AM");
+                }
+                if (endHour > 12) {
+                    endHour -= 12;
+                    endTimeChoiceBox.setValue(endHour + ":" + endMinute + " PM");
+                } else if (endHour == 12) {
+                    endTimeChoiceBox.setValue(endHour + ":" + endMinute + " PM");
+                } else {
+                    endTimeChoiceBox.setValue(endHour + ":" + endMinute + " AM");
+                }
+                edit = true;
+                editButton.setText("Cancel");
+                apptId = appt.getAppointmentID();
+            }
         } else {
-            edit = false;
-            apptId = -1;
-            editButton.setText("Edit");
+            stopEdit();
         }
+    }
+    
+    public void stopEdit() {
+        edit = false;
+            titleTxtBox.clear();
+            descriptionTxtBox.clear();
+            locationTxtBox.clear();
+            contactTxtBox.clear();
+            typeTxtBox.clear();
+            urlTxtBox.clear();
+            dateDatePicker.setValue(null);
+            startTimeChoiceBox.setValue(null);
+            endTimeChoiceBox.setValue(null);
+            apptId = 0;
+            editButton.setText("Edit");
+            customerComboBox.setDisable(false);
     }
     
     @FXML
     public void submitAppt() {
         Appointment appt = checkFields();
-        String apptValues = appt.getCustomerID() + ", " + appt.getUserID() + ", '"
-                + appt.getTitle() + "', '" + appt.getDescription() + "', '" + appt.getLocation() +
-                "', '" + appt.getContact() + "', '" + appt.getType() + "', '" + appt.getURL() +
-                "', '" + TimeConverter.getDateTimeString(appt.getStart()) + "', '" + TimeConverter.getDateTimeString(appt.getEnd())
-                + "', CURRENT_TIMESTAMP, '" + userName + "', CURRENT_TIMESTAMP, '" + userName +"')";
         if (appt != null) {
             if (edit == true) {
-                
+                if (!TimeConverter.conflictCheck(userId, appt.getStart(), appt.getEnd(), apptId)) {
+                    appt.setAppointmentID(apptId);
+                    String apptValues = "title = \"" + appt.getTitle() + "\", description = \"" +
+                            appt.getDescription() + "\", location = \"" + appt.getLocation() +
+                            "\", contact = \"" + appt.getContact() + "\", type = \"" + appt.getType() +
+                            "\", url = \"" + appt.getURL() + "\", start = \"" + TimeConverter.getDateTimeString(appt.getStart()) +
+                            "\", end = \"" + TimeConverter.getDateTimeString(appt.getEnd()) + "\", lastUpdate = CURRENT_TIMESTAMP, "
+                            + "lastUpdateBy = \"" + userName + "\"";
+                    try {
+                        DBConnection.connect();
+                        DBConnection.update("appointment", apptValues, "appointmentId = " + appt.getAppointmentID());
+                        Alert alert = new Alert(AlertType.INFORMATION);
+                        alert.setTitle("Updated");
+                        alert.setHeaderText("Update Complete");
+                        alert.setContentText("The appointment has been edited");
+                        alert.showAndWait();
+                        stopEdit();
+                    } catch (SQLException e) {
+                        System.out.println("problem with connection");
+                        e.printStackTrace();
+                    } finally {
+                        DBConnection.closeConn();
+                        customerSelect();
+                    }
+                } else {
+                    // throw alert here
+                    Alert alert = new Alert(AlertType.ERROR);
+                    alert.setTitle("Time Conflict");
+                    alert.setHeaderText("There is a problem with the times selected");
+                    alert.setContentText("Please make sure that the start time is before the end time"
+                            + "and that the appointment does not overlap with other appointments.");
+                    alert.showAndWait();
+                }
             } else {
-                try {
-                    apptValues = "(" + apptValues;
-                    DBConnection.connect();
-                    DBConnection.insert("appointment (customerId, userId, title, description, "
-                            + "location, contact, type, url, start, end, createDate, createdBy, "
-                            + "lastUpdate, lastUpdateBy) ", apptValues);
-                } catch (SQLException e) {
-                    System.out.println("problem with connection");
-                    e.printStackTrace();
-                } finally {
-                    DBConnection.closeConn();
+                if (!TimeConverter.conflictCheck(userId, appt.getStart(), appt.getEnd(), apptId)) {
+                    String apptValues = "(" +appt.getCustomerID() + ", " + appt.getUserID() + ", '"
+                            + appt.getTitle() + "', '" + appt.getDescription() + "', '" + appt.getLocation() +
+                            "', '" + appt.getContact() + "', '" + appt.getType() + "', '" + appt.getURL() +
+                            "', '" + TimeConverter.getDateTimeString(appt.getStart()) + "', '" + TimeConverter.getDateTimeString(appt.getEnd())
+                            + "', CURRENT_TIMESTAMP, '" + userName + "', CURRENT_TIMESTAMP, '" + userName +"')";
+                    try {
+                        DBConnection.connect();
+                        DBConnection.insert("appointment (customerId, userId, title, description, "
+                                + "location, contact, type, url, start, end, createDate, createdBy, "
+                                + "lastUpdate, lastUpdateBy) ", apptValues);
+                    } catch (SQLException e) {
+                        System.out.println("problem with connection");
+                        e.printStackTrace();
+                    } finally {
+                        DBConnection.closeConn();
+                        customerSelect();
+                    }
+                } else {
+                    Alert alert = new Alert(AlertType.ERROR);
+                    alert.setTitle("Time Conflict");
+                    alert.setHeaderText("There is a problem with the times selected");
+                    alert.setContentText("Please make sure that the start time is before the end time"
+                            + "and that the appointment does not overlap with other appointments.");
+                    alert.showAndWait();
                 }
             }
         }
@@ -200,8 +295,9 @@ public class AppointmentsController implements Initializable {
             Appointment appt = (Appointment) apptTableView.getSelectionModel().getSelectedItem();
             try {
                 DBConnection.connect();
-                DBConnection.delete("customer", "appointmentId=" + appt.getAppointmentID());
+                DBConnection.delete("appointment", "appointmentId = " + appt.getAppointmentID());
             } catch (SQLException e) {
+                e.printStackTrace();
                 System.out.println("failed to delete appointment");
             } finally {
                 DBConnection.closeConn();
