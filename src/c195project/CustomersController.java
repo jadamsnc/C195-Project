@@ -9,7 +9,6 @@ import Models.City;
 import Models.Country;
 import Models.Customer;
 import java.net.URL;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -99,12 +98,12 @@ public class CustomersController implements Initializable {
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // TODO
         populateTable();
         populateCountry();
-        // Using a lambda here to add an action listener to the customer table
-        // this is easier than defining the action listener seperately in the class
-        // this listener type is not currently supported by scene builder
+        addCustTableListener();
+    }
+    
+    public void addCustTableListener() {
         customerTable.getSelectionModel().selectedItemProperty().addListener((ObservableValue obs, Object oldSelection, Object newSelection) ->{
             if (newSelection != null) {
                 Customer customer = (Customer) newSelection;
@@ -132,7 +131,6 @@ public class CustomersController implements Initializable {
         });
     }
     
-    // this needs to be updated to get the user that is logged in instead of just using test
     @FXML
     public void addCustomerBtnHandler() {
         String name = newNameTxtBox.getText();
@@ -311,12 +309,6 @@ public class CustomersController implements Initializable {
         } finally {
             DBConnection.closeConn();
         }
-        observableCustomer.stream().map((cust) -> {
-            System.out.println(cust.getCustomerID());
-            return cust;
-        }).forEachOrdered((Customer cust) -> {
-            System.out.println(cust.getCustomerName());
-        }); 
         customerIDCol.setCellValueFactory(new PropertyValueFactory<>("CustomerID"));
         customerNameCol.setCellValueFactory(new PropertyValueFactory<>("CustomerName"));
         customerTable.setItems(observableCustomer);

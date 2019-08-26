@@ -44,6 +44,7 @@ public class MainWindowController implements Initializable{
     @FXML
     Label userNameLabel;
     private String userName;
+    private int userId;
     
     @FXML
     void CustomersBtnClick (ActionEvent event) {
@@ -75,7 +76,7 @@ public class MainWindowController implements Initializable{
             Stage stage = new Stage();
             stage.setTitle("Appointments");
             stage.setScene(new Scene(root));
-            controller.getUserName(userName);
+            controller.getUserName(userName, userId);
             stage.show();
         } catch (IOException e) {
             Alert alert = new Alert(AlertType.ERROR);
@@ -135,8 +136,9 @@ public class MainWindowController implements Initializable{
         }
     }
     
-    public void getUserName(String uName) {
+    public void getUserName(String uName, int uId) {
         userName = uName;
+        userId = uId;
         userNameLabel.setText("User: " + userName);
     }
 }

@@ -51,6 +51,7 @@ public class LoginController implements Initializable {
     private Label errorLbl;
     @FXML
     private Label welcomeLbl;
+    private int userId;
     
     ResourceBundle rb;
     
@@ -73,7 +74,7 @@ public class LoginController implements Initializable {
                 Stage mainWindow = (Stage) ((Node)event.getSource()).getScene().getWindow();
                 mainWindow.setTitle("Scheduler");
                 mainWindow.setScene(mainWindowScene);
-                controller.getUserName(userName);
+                controller.getUserName(userName, userId);
                 mainWindow.show();
             } catch (IOException e) {
                 System.out.println("Failed to open main window: " + e.getStackTrace());
@@ -107,6 +108,7 @@ public class LoginController implements Initializable {
             ResultSet rs = DBConnection.query("*", "user", "userName='"+userName +"'");
             while (rs.next()) {
                 if (rs.getString("password").equals(Password)) {
+                    userId = rs.getInt("userId");
                     return true;
                 }
             }

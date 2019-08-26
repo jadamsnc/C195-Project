@@ -55,7 +55,7 @@
       <TableView fx:id="apptTableView" layoutX="300.0" layoutY="36.0" prefHeight="314.0" prefWidth="298.0">
         <columns>
           <TableColumn fx:id="dateTableColumn" prefWidth="91.0" text="Date" />
-          <TableColumn fx:id="timeTableColumn" prefWidth="83.0" text="Time" />
+          <TableColumn fx:id="typeTableColumn" prefWidth="83.0" text="Type" />
             <TableColumn fx:id="descriptionTableColumn" prefWidth="123.0" text="Description" />
         </columns>
       </TableView>

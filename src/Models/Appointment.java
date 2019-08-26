@@ -5,7 +5,11 @@
  */
 package Models;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.ZonedDateTime;
+import util.DBConnection;
+import util.TimeConverter;
 
 /**
  *
@@ -139,7 +143,7 @@ public class Appointment {
     }
     
     public void setEnd(ZonedDateTime end) {
-        if (end.compareTo(getStart()) < 1) {
+        if (end.compareTo(getStart()) < 1 && TimeConverter.conflictCheck(UserID, Start, end)) {
             throw (new IllegalArgumentException("End time cannot be before start time"));
         } else {
             End = end;

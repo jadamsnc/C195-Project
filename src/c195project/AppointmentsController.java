@@ -8,17 +8,12 @@ package c195project;
 import Models.Appointment;
 import Models.Customer;
 import java.net.URL;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import static javafx.collections.FXCollections.observableList;
 import javafx.collections.ObservableList;
@@ -32,6 +27,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
 import util.CustomerConverter;
 import util.DBConnection;
 import util.TimeConverter;
@@ -73,14 +69,17 @@ public class AppointmentsController implements Initializable {
     @FXML
     private TableView apptTableView;
     @FXML
-    private TableColumn<Appointment, String> dateTableColumn;
+    private TableColumn<Appointment, ZonedDateTime> dateTableColumn;
     @FXML
-    private TableColumn<Appointment, LocalDateTime> timeTableColumn;
+    private TableColumn<Appointment, String> typeTableColumn;
     @FXML
     private TableColumn<Appointment, String> descriptionTableColumn;
     private String userName;
     private ArrayList<Appointment> apptList = new ArrayList<>();
     private ObservableList<Appointment> obsApptList= FXCollections.observableList(apptList);
+    private boolean edit = false;
+    private int userId;
+    private int apptId;
 
     /**
      * Initializes the controller class.
@@ -91,31 +90,129 @@ public class AppointmentsController implements Initializable {
         userNameLabel.setText("User: " + userName);
         populateTimes();
         populateCustomers();
-        populateApptTable(1);
     }    
     
     @FXML
     public void customerSelect() {
-        
+        Customer cust = (Customer) customerComboBox.getSelectionModel().getSelectedItem();
+        populateApptTable(cust.getCustomerID());
     }
     
     @FXML
     public void editAppt() {
-        
+        if (edit == false) {
+            
+            
+        } else {
+            edit = false;
+            apptId = -1;
+            editButton.setText("Edit");
+        }
     }
     
     @FXML
     public void submitAppt() {
+        Appointment appt = checkFields();
+        String apptValues = appt.getCustomerID() + ", " + appt.getUserID() + ", '"
+                + appt.getTitle() + "', '" + appt.getDescription() + "', '" + appt.getLocation() +
+                "', '" + appt.getContact() + "', '" + appt.getType() + "', '" + appt.getURL() +
+                "', '" + TimeConverter.getDateTimeString(appt.getStart()) + "', '" + TimeConverter.getDateTimeString(appt.getEnd())
+                + "', CURRENT_TIMESTAMP, '" + userName + "', CURRENT_TIMESTAMP, '" + userName +"')";
+        if (appt != null) {
+            if (edit == true) {
+                
+            } else {
+                try {
+                    apptValues = "(" + apptValues;
+                    DBConnection.connect();
+                    DBConnection.insert("appointment (customerId, userId, title, description, "
+                            + "location, contact, type, url, start, end, createDate, createdBy, "
+                            + "lastUpdate, lastUpdateBy) ", apptValues);
+                } catch (SQLException e) {
+                    System.out.println("problem with connection");
+                    e.printStackTrace();
+                } finally {
+                    DBConnection.closeConn();
+                }
+            }
+        }
+    }
+    
+    public Appointment checkFields() {
+        if (customerComboBox.getSelectionModel().getSelectedItem() == null) {
+            return null;
+        }
+        Customer cust = (Customer) customerComboBox.getSelectionModel().getSelectedItem();
+        int custId = cust.getCustomerID();
+        String title = titleTxtBox.getText();
+        String desc = descriptionTxtBox.getText();
+        String loc = locationTxtBox.getText();
+        String contact = contactTxtBox.getText();
+        String type = typeTxtBox.getText();
+        String url = urlTxtBox.getText();
+        LocalDate date = dateDatePicker.getValue();
+        String start = (String) startTimeChoiceBox.getValue();
+        String end = (String) endTimeChoiceBox.getValue();
         
+        if (date != null && start != null && end != null && !type.equals("")) {
+            if (title.equals("")) {
+                title = "Not needed";
+            }
+            if (desc.equals("")) {
+                desc = "Not needed";
+            }
+            if (loc.equals("")) {
+                loc = "Not needed";
+            }
+            if (contact.equals("")) {
+                contact = "Not needed";
+            }
+            if (url.equals("")) {
+                url = "Not needed";
+            }
+            Appointment appt = new Appointment(custId, userId, title, desc, loc, contact,
+                type, url, getUTC(date, start), getUTC(date, end));
+            return appt;
+        } else {
+            return null;
+        }   
+    }
+    
+    public ZonedDateTime getUTC(LocalDate date, String time) {
+        String period = time.split(" ", 2)[1];
+        int hour = Integer.parseInt(time.split(" ", 2)[0].split(":", 2)[0]);
+        String minute = time.split(" ", 2)[0].split(":", 2)[1];
+        if (period.equals("PM")){
+            if (hour == 12) {
+                return TimeConverter.getUTCTime(date + " " + hour + ":" + minute);
+            } else {
+                hour += 12;
+                return TimeConverter.getUTCTime(date + " " + hour + ":" + minute);
+            }
+        } else {
+            return TimeConverter.getUTCTime(date + " " + hour + ":" + minute);
+        }
     }
     
     @FXML
     public void deleteAppt() {
-        
+        if (apptTableView.getSelectionModel().getSelectedItem() != null){
+            Appointment appt = (Appointment) apptTableView.getSelectionModel().getSelectedItem();
+            try {
+                DBConnection.connect();
+                DBConnection.delete("customer", "appointmentId=" + appt.getAppointmentID());
+            } catch (SQLException e) {
+                System.out.println("failed to delete appointment");
+            } finally {
+                DBConnection.closeConn();
+            }
+            customerSelect();
+        }
     }
     
-    public void getUserName(String uName) {
+    public void getUserName(String uName, int uId) {
         userName = uName;
+        userId = uId;
         userNameLabel.setText("User: " + userName);
     }
     
@@ -176,7 +273,6 @@ public class AppointmentsController implements Initializable {
     }
     
     
-    // this needs lots of work
     public void populateApptTable(int CustomerId) {
         apptTableView.getItems().clear();
         try {
@@ -196,17 +292,14 @@ public class AppointmentsController implements Initializable {
                 ZonedDateTime end = TimeConverter.getLocalTime(rs.getString("end"));
                 obsApptList.add(new Appointment(apptId, customerId, userId, title, description, location, contact, type, url, start, end));
             }
+            dateTableColumn.setCellValueFactory(new PropertyValueFactory<>("Start"));
+            typeTableColumn.setCellValueFactory(new PropertyValueFactory<>("Type"));
+            descriptionTableColumn.setCellValueFactory(new PropertyValueFactory<>("Description"));
+            apptTableView.setItems(obsApptList);
         } catch (SQLException e) {
-            
+            System.out.println("failed to populate table");
         } finally {
             DBConnection.closeConn();
-        }
-        obsApptList.stream().map((appt) -> {
-            System.out.println(appt.getAppointmentID());
-            return appt;
-        }).forEachOrdered((Appointment appt) -> {
-            System.out.println(appt.getTitle());
-        }); 
-//        
+        } 
     }
 }

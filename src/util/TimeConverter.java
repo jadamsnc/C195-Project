@@ -5,6 +5,8 @@
  */
 package util;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -33,6 +35,20 @@ public class TimeConverter {
         return utcZdt;
     }
     
+    public static ZonedDateTime getUTCFromDB(String date) {
+        String dateTime[] = date.split(" ", 2);
+        String dateSplit[] = dateTime[0].split("-", 3);
+        int year = Integer.parseInt(dateSplit[0]);
+        int month = Integer.parseInt(dateSplit[1]);
+        int day = Integer.parseInt(dateSplit[2]);
+        String time[] = dateTime[1].split(":", 3);
+        int hour = Integer.parseInt(time[0]);
+        int minute = Integer.parseInt(time[1]);
+        LocalDateTime ldt = LocalDateTime.of(year, month, day, hour, minute); 
+        ZonedDateTime utcZdt = ZonedDateTime.of(ldt, ZoneId.of("UTC"));
+        return utcZdt;
+    }
+    
     public static ZonedDateTime getLocalTime(String date) {
         String dateTime[] = date.split(" ", 2);
         String dateSplit[] = dateTime[0].split("-", 3);
@@ -49,8 +65,21 @@ public class TimeConverter {
     }
     
     public static String getDateTimeString(ZonedDateTime zdt) {
-        DateTimeFormatter customFormatter = DateTimeFormatter.ofPattern("yyyyMMdd HH:mm:ss");
+        DateTimeFormatter customFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         return customFormatter.format(zdt);
     }
-    
+    public static boolean conflictCheck(int userId, ZonedDateTime start, ZonedDateTime end) {
+        try {
+                DBConnection.connect();
+                ResultSet rs = DBConnection.query("*", "appointment", "userId=" + userId);
+                // this needs to be done
+                
+                return true;
+            } catch (SQLException e) {
+                System.out.println("problem with db connection");
+            } finally {
+                DBConnection.closeConn();
+            }
+        return false;
+    }
 }
