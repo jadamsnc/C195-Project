@@ -4,11 +4,9 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/C:/Users/malic/Documents/NetBeans%20Projects/C195-Project/src/Models/Appointment.java</file>
-            <file>file:/C:/Users/malic/Documents/NetBeans%20Projects/C195-Project/src/c195project/AppointmentsController.java</file>
             <file>file:/C:/Users/malic/Documents/NetBeans%20Projects/C195-Project/src/util/DBConnection.java</file>
-            <file>file:/C:/Users/malic/Documents/NetBeans%20Projects/C195-Project/src/c195project/LoginController.java</file>
+            <file>file:/C:/Users/malic/Documents/NetBeans%20Projects/C195-Project/src/c195project/ReportsController.java</file>
             <file>file:/C:/Users/malic/Documents/NetBeans%20Projects/C195-Project/src/util/TimeConverter.java</file>
-            <file>file:/C:/Users/malic/Documents/NetBeans%20Projects/C195-Project/src/c195project/CustomersController.java</file>
             <file>file:/C:/Users/malic/Documents/NetBeans%20Projects/C195-Project/src/c195project/MainWindowController.java</file>
         </group>
     </open-files>
