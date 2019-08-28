@@ -5,17 +5,26 @@
  */
 package c195project;
 
+import Models.Appointment;
+import Models.User;
 import java.net.URL;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.ResourceBundle;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import util.DBConnection;
+import util.TimeConverter;
+import util.UserConverter;
 
 /**
  * FXML Controller class
@@ -28,11 +37,29 @@ public class ReportsController implements Initializable {
     int userId;
     @FXML
     private Label userNameLabel;
-    
-    private final String months[] = new String[]{"January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"};
-    private int currentMonth = 0;
+    @FXML
+    private ComboBox apptTypeMonthComboBox;
+    @FXML
+    private ListView apptTypeListView;
+    @FXML
+    private ComboBox consultantMonthBox;
+    @FXML
+    private ComboBox consultantBox;
+    @FXML
+    private Button generateConsultantBtn;
+    @FXML
+    private ListView consultantSchedList;
+    @FXML
+    private Button generateBtn;
+    @FXML
+    private ComboBox locationMonthBox;
+    @FXML
+    private ComboBox locationBox;
+    @FXML
+    private ListView locationListBox;
     private HashMap<String, Integer> typeMap = new HashMap<>();
+    private ArrayList<String> months = new ArrayList<>();
+    
     
 
     /**
@@ -41,17 +68,118 @@ public class ReportsController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
-        currentMonth = LocalDate.now().getMonthValue() - 1;
-        System.out.println(months[currentMonth]);
-        
-    }    
+        populateMonthBox(apptTypeMonthComboBox);
+        populateMonthBox(consultantMonthBox);
+        populateMonthBox(locationMonthBox);
+        populateConsultantBox();
+        populateLocationBox();
+    }
+    
+    @FXML
+    public void generateLocationReport() {
+        ArrayList<Appointment> appts = new ArrayList<>();
+        String location = (String) locationBox.getSelectionModel().getSelectedItem();
+        String month = (String) locationMonthBox.getSelectionModel().getSelectedItem();
+        if (location != null && month != null) {
+            try {
+                DBConnection.connect();
+                ResultSet rs = DBConnection.query("*", "appointment", "location = '" + location + 
+                        "' AND MONTHNAME(start) = '" + month + "'");
+                while (rs.next()) {
+                    Appointment appt = DBConnection.getAppointment(rs);
+                    appts.add(appt);
+                }
+                locationListBox.setItems(FXCollections.observableList(appts));
+            } catch (SQLException e) {
+                System.out.println("Failed to get appointments");
+            } finally {
+                DBConnection.closeConn();
+            }
+        }
+    }
+    
+    public void populateLocationBox() {
+        ArrayList<String> locations = new ArrayList<>();
+        try {
+            DBConnection.connect();
+            ResultSet rs = DBConnection.query("*", "appointment");
+            while (rs.next()) {
+                if (!locations.contains(rs.getString("location"))) {
+                    locations.add(rs.getString("location"));
+                }
+            }
+            locationBox.setItems(FXCollections.observableList(locations));
+        } catch (SQLException e) {
+            System.out.println("Failed to retrieve appointment list");
+        } finally {
+            DBConnection.closeConn();
+        }
+    }
+    
+    @FXML
+    public void generateConsultantReport() {
+        User consultant = (User) consultantBox.getSelectionModel().getSelectedItem();
+        String month = (String) consultantMonthBox.getSelectionModel().getSelectedItem();
+        ArrayList<Appointment> appts = new ArrayList<>();
+        if (consultant != null && month != null) {
+            try {
+                DBConnection.connect();
+                ResultSet rs = DBConnection.query("*", "appointment", "userId = " + consultant.getUserID() +
+                        " AND MONTHNAME(start) = '" + month + "'");
+                while (rs.next()) {
+                    Appointment appt = DBConnection.getAppointment(rs);
+                    appts.add(appt);
+                }
+                consultantSchedList.setItems(FXCollections.observableList(appts));
+            } catch (SQLException e) {
+                System.out.println("Failed to get appt list");
+            } finally {
+                DBConnection.closeConn();
+            }
+        }
+    }
+    
+    public void populateConsultantBox() {
+        ArrayList<User> consultants = new ArrayList<>();
+        try {
+            DBConnection.connect();
+            ResultSet rs = DBConnection.query("*", "user");
+            while (rs.next()) {
+                User user = new User(rs.getInt("userId"), rs.getString("userName"));
+                consultants.add(user);
+            }
+            consultantBox.setConverter(new UserConverter());
+            consultantBox.setItems(FXCollections.observableList(consultants));
+        } catch (SQLException e) {
+            System.out.println("Failed to get user list");
+        } finally {
+            DBConnection.closeConn();
+        }
+    }
+    
+    public void populateMonthBox(ComboBox box) {
+        months.add("January");
+        months.add("February");
+        months.add("March");
+        months.add("April");
+        months.add("May");
+        months.add("June");
+        months.add("July");
+        months.add("August");
+        months.add("September");
+        months.add("October");
+        months.add("November");
+        months.add("December");
+        box.setItems(FXCollections.observableList(months));
+    }
     
     @FXML
     public void typeMonthSelect() {
         typeMap.clear();
+        String month = (String) apptTypeMonthComboBox.getSelectionModel().getSelectedItem();
         try {
             DBConnection.connect();
-            ResultSet rs = DBConnection.query("*", "appointment", "MONTHNAME(start) = '" + months[currentMonth] + "'");
+            ResultSet rs = DBConnection.query("*", "appointment", "MONTHNAME(start) = '" + month +  "'");
             while (rs.next()) {
                 Integer oldValue = typeMap.get(rs.getString("type"));
                 if (oldValue != null) {
@@ -61,18 +189,18 @@ public class ReportsController implements Initializable {
                     typeMap.put(rs.getString("type"), 1);
                 }
             }
+            ArrayList<String> types = new ArrayList<>();
             for (HashMap.Entry<String, Integer> entry : typeMap.entrySet()) {
                 // need to make is info display here use entry.getKey() and .getValue()
+                types.add("Type: " + entry.getKey() + " Number: " + entry.getValue());
             }
-        } catch (SQLException e ) {
+            apptTypeListView.setItems(FXCollections.observableList(types));
             
+        } catch (SQLException e ) {
+            System.out.println("failed to get appointments");
         } finally {
             DBConnection.closeConn();
         }
-    }
-    
-    public void populateTypeMonth() {
-        // need to populate the combo box from month array here
     }
     
     public void getUserName(String uName, int uId) {
