@@ -39,7 +39,6 @@ import util.DBConnection;
  */
 public class CustomersController implements Initializable {
     
-    private DBConnection conn = DBConnection.getDBConn();
     @FXML
     private TextField newNameTxtBox;
     @FXML
@@ -115,7 +114,7 @@ public class CustomersController implements Initializable {
                     updateActiveChkBox.setSelected(false);
                 }
                 try {
-                    conn.connect();
+                    DBConnection.connect();
                     ResultSet rs = DBConnection.query("*", "address", "addressId=" + customer.getAddressID());
                     rs.next();
                     updateAddressTxtBox.setText(rs.getString("address"));

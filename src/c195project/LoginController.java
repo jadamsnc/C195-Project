@@ -125,8 +125,8 @@ public class LoginController implements Initializable {
                 DBConnection.connect();
                 ResultSet user = DBConnection.query("*", "user", "userName='" + userName + "'");
                 user.next();
-                int userId = user.getInt("userId");
-                ResultSet rs = DBConnection.query("*", "appointment", "userId=" + userId);
+                int uId = user.getInt("userId");
+                ResultSet rs = DBConnection.query("*", "appointment", "userId=" + uId);
                 ZonedDateTime currentTime = ZonedDateTime.now();
                 int year = currentTime.getYear();
                 int day = currentTime.getDayOfYear();

@@ -50,7 +50,7 @@ public class ReportsController implements Initializable {
     @FXML
     private ListView consultantSchedList;
     @FXML
-    private Button generateBtn;
+    private Button generateLocationBtn;
     @FXML
     private ComboBox locationMonthBox;
     @FXML
@@ -73,9 +73,13 @@ public class ReportsController implements Initializable {
         populateMonthBox(locationMonthBox);
         populateConsultantBox();
         populateLocationBox();
+        // using a lambda here to assign the action event for the button click
+        // this can be done in place of using scene building and is easier
+        // than the old way to set action events. if needed I could code the entire
+        // function in this lambda.
+        generateLocationBtn.setOnAction(event -> generateLocationReport());
     }
     
-    @FXML
     public void generateLocationReport() {
         ArrayList<Appointment> appts = new ArrayList<>();
         String location = (String) locationBox.getSelectionModel().getSelectedItem();
@@ -190,10 +194,12 @@ public class ReportsController implements Initializable {
                 }
             }
             ArrayList<String> types = new ArrayList<>();
-            for (HashMap.Entry<String, Integer> entry : typeMap.entrySet()) {
-                // need to make is info display here use entry.getKey() and .getValue()
+            
+            // using a lambda here to replace a for each statement on the hashmap.
+            // this is a more efficient way to write this code.
+            typeMap.entrySet().forEach((entry) -> {
                 types.add("Type: " + entry.getKey() + " Number: " + entry.getValue());
-            }
+            });
             apptTypeListView.setItems(FXCollections.observableList(types));
             
         } catch (SQLException e ) {
