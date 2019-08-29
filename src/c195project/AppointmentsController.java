@@ -150,18 +150,22 @@ public class AppointmentsController implements Initializable {
     
     public void stopEdit() {
         edit = false;
-            titleTxtBox.clear();
-            descriptionTxtBox.clear();
-            locationTxtBox.clear();
-            contactTxtBox.clear();
-            typeTxtBox.clear();
-            urlTxtBox.clear();
-            dateDatePicker.setValue(null);
-            startTimeChoiceBox.setValue(null);
-            endTimeChoiceBox.setValue(null);
-            apptId = 0;
-            editButton.setText("Edit");
-            customerComboBox.setDisable(false);
+        clearFields();
+    }
+    
+    public void clearFields() {
+        titleTxtBox.clear();
+        descriptionTxtBox.clear();
+        locationTxtBox.clear();
+        contactTxtBox.clear();
+        typeTxtBox.clear();
+        urlTxtBox.clear();
+        dateDatePicker.setValue(null);
+        startTimeChoiceBox.setValue(null);
+        endTimeChoiceBox.setValue(null);
+        apptId = 0;
+        editButton.setText("Edit");
+        customerComboBox.setDisable(false);
     }
     
     @FXML
@@ -214,6 +218,7 @@ public class AppointmentsController implements Initializable {
                         DBConnection.insert("appointment (customerId, userId, title, description, "
                                 + "location, contact, type, url, start, end, createDate, createdBy, "
                                 + "lastUpdate, lastUpdateBy) ", apptValues);
+                        clearFields();
                     } catch (SQLException e) {
                         System.out.println("problem with connection");
                         e.printStackTrace();
